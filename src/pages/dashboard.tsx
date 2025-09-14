@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react' // 1. Import useCallback
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import NoteList from '../components/NoteList'
@@ -9,8 +9,13 @@ export default function Dashboard() {
   const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   
-  // 1. State to hold the function that refreshes the notes list
   const [refreshNotes, setRefreshNotes] = useState(() => () => {})
+
+  // 2. Wrap the onNewNote handler in useCallback
+  // This ensures the function is not recreated on every render
+  const onNewNote = useCallback((fetcher: () => void) => {
+    setRefreshNotes(() => fetcher)
+  }, []) // Empty dependency array means it will be created only once
 
   useEffect(() => {
     if (status === 'loading') return
@@ -28,13 +33,14 @@ export default function Dashboard() {
   }
 
   const handleNoteCreated = () => {
-    setShowForm(false) // Close the form
-    refreshNotes()     // Trigger the refresh
+    setShowForm(false) 
+    refreshNotes()     
   }
 
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-sm">
+        {/* ... Nav content remains the same ... */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -71,13 +77,12 @@ export default function Dashboard() {
           {showForm && (
             <NoteForm
               onClose={() => setShowForm(false)}
-              // 2. Pass the refresh function to the form
               onNoteCreated={handleNoteCreated}
             />
           )}
           
-          {/* 3. Get the refresh function from the list */}
-          <NoteList onNewNote={(fetcher) => setRefreshNotes(() => fetcher)} />
+          {/* 3. Pass the stable onNewNote function to NoteList */}
+          <NoteList onNewNote={onNewNote} />
         </div>
       </main>
     </div>

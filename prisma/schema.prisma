@@ -1,13 +1,17 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider     = "mongodb"
   url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_DATABASE_URL")
   relationMode = "prisma"
 }
+
+
 model Tenant {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") // <-- @db.ObjectId REMOVED
   slug      String   @unique
   name      String
   plan      Plan     @default(FREE)
@@ -21,12 +25,12 @@ model Tenant {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") // <-- @db.ObjectId REMOVED
   email     String   @unique
   password  String
   role      Role     @default(MEMBER)
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId  String   @db.ObjectId
+  tenantId  String   // <-- @db.ObjectId REMOVED
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -36,13 +40,13 @@ model User {
 }
 
 model Note {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") // <-- @db.ObjectId REMOVED
   title     String
   content   String
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId  String   @db.ObjectId
+  tenantId  String   // <-- @db.ObjectId REMOVED
   author    User     @relation(fields: [authorId], references: [id])
-  authorId  String   @db.ObjectId
+  authorId  String   // <-- @db.ObjectId REMOVED
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
